@@ -5,8 +5,8 @@
         <div class="flex items-center text-xl font-bold">
           Pages
           <SfTooltip label="Open manual" placement="right" :show-arrow="true" class="flex">
-            <SfIconHelp class="ml-2 cursor-pointer" @click="openHelpPage"
-          /></SfTooltip>
+            <SfIconHelp class="ml-2 cursor-pointer" @click="openHelpPage" />
+          </SfTooltip>
         </div>
         <button data-testid="pages-view-close" class="!p-0" @click="closeDrawer">
           <SfIconClose />
@@ -51,12 +51,17 @@
           <h2>Content Pages</h2>
         </template>
 
-        <div class="mb-6 mt-4">
-          <ul class="bg-white shadow-md rounded-lg">
-            <PagesItem v-for="item in contentItems" :key="item.path" :item="item" :parent-id="item.id" />
+        <div :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']">
+          <ul class="rounded-lg" @scroll="(e) => handleScroll(e, 'content')">
+            <PagesItem :item="homepageItem" :parent-id="undefined" :icon="SfIconHome" :hide-settings="true" />
+            <PagesItem v-for="item in contentItems" :key="item.id" :item="item" :parent-id="item.id" />
+            <li v-if="loadingContent" class="flex justify-center items-center py-4">
+              <SfLoaderCircular size="sm" />
+            </li>
           </ul>
         </div>
       </UiAccordionItem>
+
       <UiAccordionItem
         v-model="productPagesOpen"
         data-testid="product-pages-section"
@@ -67,9 +72,12 @@
           <h2>Product Categories</h2>
         </template>
 
-        <div class="mb-6 mt-4">
-          <ul class="bg-white shadow-md rounded-lg">
-            <PagesItem v-for="item in itemItems" :key="item.path" :item="item" :parent-id="item.id" />
+        <div :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']">
+          <ul class="rounded-lg" @scroll="(e) => handleScroll(e, 'item')">
+            <PagesItem v-for="item in itemItems" :key="item.id" :item="item" :parent-id="item.id" />
+            <li v-if="loadingItem" class="flex justify-center items-center py-4">
+              <SfLoaderCircular size="sm" />
+            </li>
           </ul>
         </div>
       </UiAccordionItem>
@@ -81,36 +89,40 @@
 
 <script setup lang="ts">
 import PagesItem from '~/components/PagesView/PagesItem.vue';
-import { SfIconClose, SfIconHelp, SfTooltip, SfIconAdd, SfLoaderCircular } from '@storefront-ui/vue';
-import type { MenuItemType } from '~/components/PagesView/types';
+import { SfIconClose, SfIconHelp, SfTooltip, SfIconAdd, SfIconHome, SfLoaderCircular } from '@storefront-ui/vue';
+import type { CategoryEntry } from '@plentymarkets/shop-api';
 const { locale } = useI18n();
-const { pages } = await usePages();
-const contentPagesOpen = ref(false);
-const productPagesOpen = ref(false);
-const { closeDrawer, togglePageModal, settingsCategory } = useSiteConfiguration();
 
+const { closeDrawer, togglePageModal, settingsCategory } = useSiteConfiguration();
 const { loading, hasChanges, save } = useCategorySettingsCollection();
 
-const splitItemsByType = (items: MenuItemType[]) => {
-  const result = {
-    contentItems: [] as MenuItemType[],
-    itemItems: [] as MenuItemType[],
-  };
+const { contentItems, itemItems, loadingContent, loadingItem, fetchCategories } = useCategoriesSearch();
 
-  items.forEach((item) => {
-    switch (item.type) {
-      case 'content':
-        result.contentItems.push(item);
-        break;
-      case 'item':
-        result.itemItems.push(item);
-        break;
-    }
-  });
+const contentPagesOpen = ref(false);
+const productPagesOpen = ref(false);
 
-  return result;
+const limitAccordionHeight = computed(() => contentPagesOpen.value && productPagesOpen.value);
+
+const handleScroll = async (e: Event, type: 'content' | 'item') => {
+  const el = e.target as HTMLElement;
+  const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 50;
+
+  if (nearBottom) {
+    await fetchCategories(type);
+  }
 };
-const { contentItems, itemItems } = splitItemsByType(pages.value);
+
+watch(contentPagesOpen, (opened) => {
+  if (opened && contentItems.value.length === 0) {
+    fetchCategories('content');
+  }
+});
+
+watch(productPagesOpen, (opened) => {
+  if (opened && itemItems.value.length === 0) {
+    fetchCategories('item');
+  }
+});
 
 const openHelpPage = () => {
   const urls: Record<string, string> = {
@@ -119,7 +131,49 @@ const openHelpPage = () => {
   };
 
   const targetUrl = urls[locale.value] ?? urls['en'] ?? null;
-
   if (targetUrl) window.open(targetUrl, '_blank');
+};
+
+const homepageItem: CategoryEntry = {
+  clients: [],
+  details: [
+    {
+      canonicalLink: '/',
+      categoryId: '0',
+      description: '',
+      description2: '',
+      fulltext: '',
+      image: null,
+      image2: null,
+      image2Path: null,
+      imagePath: null,
+      itemListView: '',
+      lang: locale.value,
+      metaDescription: '',
+      metaKeywords: '',
+      metaRobots: 'index, follow',
+      metaTitle: 'Homepage',
+      name: 'Homepage',
+      nameUrl: '/',
+      pageView: 'homepage',
+      plenty_category_details_image_path: '',
+      plenty_category_details_image2_path: '',
+      plentyId: 0,
+      position: '0',
+      shortDescription: '',
+      singleItemView: '',
+      updatedAt: '',
+      updatedBy: '',
+    },
+  ],
+  hasChildren: false,
+  id: 0,
+  level: 1,
+  linklist: '',
+  parentCategoryId: 0,
+  right: 'ALL',
+  sitemap: 'Y',
+  type: 'immutable',
+  isLinkedToWebstore: true,
 };
 </script>

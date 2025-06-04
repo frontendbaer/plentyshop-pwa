@@ -1,20 +1,34 @@
 import type { TailwindPalette } from '~/utils/tailwindHelper';
 import type { Block, CategoryTreeItem } from '@plentymarkets/shop-api';
 export type DrawerView =
+  | 'SeoView'
   | 'SettingsView'
   | 'blocksList'
   | 'DesignView'
-  | 'SeoView'
   | 'PagesView'
   | 'blocksSettings'
   | null;
-export type SettingsType = 'general-settings' | 'seo-settings' | null;
+export type SettingsType = 'general-settings' | 'seo-settings' | 'general-menu' | null;
 export type SelectedFont = { caption: string; value: string };
 export type ConfigurationSettings = {
   blockSize: string;
   selectedFont: SelectedFont;
   primaryColor: string;
   secondaryColor: string;
+  headerBackgroundColor: string;
+  iconColor: string;
+  headerLogo: string;
+  favicon: string;
+  ogTitle: string;
+  ogImg: string;
+  useAvif: boolean;
+  useWebp: boolean;
+  seoSettings: {
+    title: string;
+    description: string;
+    keywords: string;
+    robots: string;
+  };
 };
 
 export interface UseSiteConfigurationState {
@@ -28,6 +42,14 @@ export interface UseSiteConfigurationState {
   currentFont: string;
   primaryColor: string;
   secondaryColor: string;
+  headerBackgroundColor: string;
+  iconColor: string;
+  headerLogo: string;
+  favicon: string;
+  ogTitle: string;
+  ogImg: string;
+  useAvif: boolean;
+  useWebp: boolean;
   selectedFont: SelectedFont;
   blockSize: string;
   placement: string;
@@ -35,6 +57,12 @@ export interface UseSiteConfigurationState {
   blockType: string;
   blockUuid: string;
   initialData: ConfigurationSettings;
+  seoSettings: {
+    title: string;
+    description: string;
+    keywords: string;
+    robots: string;
+  };
 }
 
 export type LoadGoogleFont = (font: string) => void;
@@ -60,7 +88,16 @@ export interface UseSiteConfiguration {
   currentFont: Readonly<Ref<UseSiteConfigurationState['currentFont']>>;
   primaryColor: Readonly<Ref<UseSiteConfigurationState['primaryColor']>>;
   secondaryColor: Readonly<Ref<UseSiteConfigurationState['secondaryColor']>>;
+  headerBackgroundColor: Readonly<Ref<UseSiteConfigurationState['headerBackgroundColor']>>;
+  iconColor: Readonly<Ref<UseSiteConfigurationState['iconColor']>>;
+  headerLogo: Readonly<Ref<UseSiteConfigurationState['headerLogo']>>;
+  favicon: Readonly<Ref<UseSiteConfigurationState['favicon']>>;
+  ogTitle: Readonly<Ref<UseSiteConfigurationState['ogTitle']>>;
+  ogImg: Readonly<Ref<UseSiteConfigurationState['ogImg']>>;
+  useAvif: Readonly<Ref<UseSiteConfigurationState['useAvif']>>;
+  useWebp: Readonly<Ref<UseSiteConfigurationState['useWebp']>>;
   blockSize: Readonly<Ref<UseSiteConfigurationState['blockSize']>>;
+  seoSettings: Readonly<Ref<UseSiteConfigurationState['seoSettings']>>;
   placement: Readonly<Ref<UseSiteConfigurationState['placement']>>;
   drawerView: Readonly<Ref<UseSiteConfigurationState['drawerView']>>;
   selectedFont: Readonly<Ref<UseSiteConfigurationState['selectedFont']>>;
@@ -69,6 +106,7 @@ export interface UseSiteConfiguration {
   loadGoogleFont: LoadGoogleFont;
   updatePrimaryColor: SetColorPalette;
   updateSecondaryColor: SetColorPalette;
+  updateHeaderBackgroundColor: SetColorPalette;
   updateBlockSize: UpdateBlockSize;
   saveSettings: SaveSettings;
   openDrawerWithView: OpenDrawerView;

@@ -1,16 +1,20 @@
 # Changelog PlentyONE Shop
 
-# v1.xx.xx (xxxx-xx-xx) <a href="https://github.com/plentymarkets/plentyshop-pwa/compare/v1.13.2...v1.x.x" target="_blank" rel="noopener"><b>Overview of all changes</b></a>
+For changelogs of newer versions, refer to the [Releases](https://github.com/plentymarkets/plentyshop-pwa/releases) page.
+
+# v1.xx.xx (xxxx-xx-xx) <a href="https://github.com/plentymarkets/plentyshop-pwa/compare/v1.15.0...v1.x.x" target="_blank" rel="noopener"><b>Overview of all changes</b></a>
 
 ### 🚀 New
 
-- Added page for accessibility information.
-- Drag-and-drop functionality has been integrated for blocks and block settings.
+- Added DHL delivery location finder functionality.
+- Added robots for declaration of accessibility page
+- Displaying correct prices for B2B customers.
 - (dev) Added pages entry on the left side menu, where users can manage their pages.
 - (dev) Add design for adding a new page.
 - (dev) Added design for category settings.
 - (dev) Added form for general settings
 - (dev) Added form for SEO settings
+- (dev) Added view for global SEO settings
 - (dev) Updated general settings and seo settings to get data dynamically
 - (dev) Added form for delete page
 - (dev) Fix correct children data for Seo settings
@@ -19,18 +23,93 @@
 - (dev) Added editable page for category
 - (dev) Added delete category logic
 - (dev) Added delete category logic
+- (dev) Replace data structures for left navigation and individual categories
+- (dev) Add isLinkedToWebstore property for categories
+- (dev) Close drawer on second click
+- (dev) Add Settings View
+- (dev) Changed design for settings drawer
+- (dev) Logo preview
+- (dev) Change Category Settings Drawer delete button color
+- (dev) Change MegaMenu hover background classes to secondary 100
+- (dev) Extended hint text for subpages on deletion
+- Added a customer wish input field on the checkout
+- (dev) New menu styling
+- (dev) Add parent suggestion for add page
 
 ### 👷 Changed
 
-- Unified some terms in German and English
+- Checkout address listing details now includes "Post number", when available.
+- The contact form requires a turnstile validation otherwise the form will not show up.
+- `vsf-locale` cookie got removed, we now send a header `locale` with every sdk request.
+- Translations are now lazy loaded. This decreases JavaScript chunk size, which in turn improves page load performance.
+- Editor components are now loaded asynchronously, which improves page load performance.
 
 ### 🩹 Fixed
 
+- Fixed remove unnecessary display of cross-price if prices are the same.
+- Fixed an issue in the guest checkout flow where available address was incorrectly shown as unavailable.
+- Fixed cookierbar text overlap and browse products translation.
+- Fixed an issue in the guest checkout flow that allowed address saving without providing an email.
+- Fixed an issue where the currency was not displayed correctly.
+- Fixed missing form labels for DHL preferred delivery services.
+- Fixed a z-index issue in the checkout.
 - (dev) Fix Page Selector state.
 - (dev) Fix Page Selector closes when clicking outside the box.
 - (dev) Fix Page Selector closes on second button click.
 - (dev) Fix styling of editor actions on content pages.
 - (dev) Fix notification and modal closing of delete category
+- (dev) Fix Page Seo title tooltip
+- (dev) Fix editor page navigation
+
+### Performance
+
+- Removed i18n from `app.vue`
+
+# v1.15.0 (2025-05-06) <a href="https://github.com/plentymarkets/plentyshop-pwa/compare/v1.14.0...v1.15.0" target="_blank" rel="noopener"><b>Overview of all changes</b></a>
+
+### 🚀 New
+
+- Added aria label to custom button component.
+- Added information about selected "DHL Preferred Delivery Services" to order confirmation.
+- Enabled caching for turbo builds.
+
+### 👷 Changed
+
+- Cookies consent prompt is shown again if consent config changes (via hash check).
+- Use preview text for bundle items on item page instead of item description.
+- Updated instances of old branding and product names.
+- Order confirmation soft login shows a warning instead of an error message now.
+- Moved the "Login instead" button below the email input field in the contact information section during checkout.
+- Changed the button icon and label for exiting the editor.
+
+### 🩹 Fixed
+
+- Checkout improvements related to payment methods surcharge and required amounts for availability.
+- Fixed cookie bar hydration error in `@plentymarkets/shop-module-gtag@1.1.2`.
+- The CSS for drag-and-drop is now only loaded in the editor, not the live shop.
+- Removed lagacy JavaScript for drag-and-drop.
+
+### 💻 Developer notes
+
+- Added application health check endpoint `/healthz`.
+
+# v1.14.0 (2025-04-17) <a href="https://github.com/plentymarkets/plentyshop-pwa/compare/v1.13.2...v1.14.0" target="_blank" rel="noopener"><b>Overview of all changes</b></a>
+
+### 🚀 New
+
+- Added Mollie payment methods in the checkout.
+- Added a new legal page for the declaration on accessibility.
+- Drag-and-drop functionality has been integrated for blocks and block settings.
+
+### 👷 Changed
+
+- Unified some terms in German and English
+- Filtering not integrated PayPal payment methods out of the checkout process.
+
+### 🩹 Fixed
+
+- Fixed the PayPal Express flow, requires PayPal Plugin version >= 6.5.11
+- Fixed the redirect in the quick checkout to the guest login instead of the checkout page when you are not logged in.
 
 # v1.13.2 (2025-04-14) <a href="https://github.com/plentymarkets/plentyshop-pwa/compare/v1.13.1...v1.13.2" target="_blank" rel="noopener"><b>Overview of all changes</b></a>
 
