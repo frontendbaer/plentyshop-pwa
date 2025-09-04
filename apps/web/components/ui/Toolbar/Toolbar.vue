@@ -1,6 +1,6 @@
 <template>
   <div
-    class="mb-3"
+    class="mb-3 font-editor"
     :class="['sticky top-0 bg-white h-[52px] shadow-[0px_15px_20px_-15px_#111]', drawerZIndexClass]"
     data-testid="edit-mode-toolbar"
   >
@@ -8,7 +8,7 @@
       <UiBrandLogo />
       <div class="absolute left-1/2 transform -translate-x-1/2 flex space-x-2">
         <UiLanguageEditor />
-        <UiPageSelector v-if="runtimeConfig.public.isDev" />
+        <UiPageSelector />
       </div>
       <div class="ml-auto flex space-x-2">
         <button
@@ -17,53 +17,67 @@
           @click="toggleEdit"
         >
           <template v-if="disableActions">
-            <SfIconVisibility class="mr-[5px] md:mr-[10px]" />
-            Preview
+            <SfTooltip :label="previewLabel" placement="bottom" :show-arrow="true">
+              <SfIconVisibility class="mr-[5px] md:mr-[10px]" />
+              {{ getEditorTranslation('preview') }}
+            </SfTooltip>
           </template>
           <template v-else>
-            <SfIconBase size="xs" viewBox="0 0 18 18" class="mr-[5px] md:mr-[10px] fill-primary-900 cursor-pointer">
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path :d="editPath" fill="black" />
-              </svg>
-            </SfIconBase>
-            Edit
+            <SfTooltip :label="editLabel" placement="bottom" :show-arrow="true">
+              <SfIconBase size="xs" viewBox="0 0 18 18" class="mr-[5px] md:mr-[10px] fill-primary-900 cursor-pointer">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path :d="editPath" fill="black" />
+                </svg>
+              </SfIconBase>
+              {{ getEditorTranslation('edit') }}
+            </SfTooltip>
           </template>
         </button>
-        <button
-          class="self-start bg-[#062633] text-white px-2 py-1 rounded-md font-inter font-medium text-sm leading-5 flex items-center md:px-4 md:py-2 md:text-base md:leading-6"
-          :class="{ 'opacity-40 cursor-not-allowed': !isTouched || settingsLoading }"
-          :disabled="!isTouched || settingsLoading"
-          data-testid="edit-save-button"
-          @click="save"
+        <SfTooltip
+          :label="!isTouched || settingsLoading ? 'No changes to save.' : 'You have unsaved changes. Click to save.'"
+          placement="bottom"
+          :show-arrow="true"
         >
-          <template v-if="loading">
-            <SfLoaderCircular class="animate-spin w-4 h-4 text-white mr-[5px] md:mr-[10px]" />
-          </template>
-          <template v-else>
-            <SfIconBase size="xs" class="mr-[5px] md:mr-[10px]">
-              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path :d="savePath" fill="white" />
-              </svg>
-            </SfIconBase>
-          </template>
-          Save changes
-        </button>
+          <button
+            class="self-start bg-[#062633] text-white px-2 py-1 rounded-md font-inter font-medium text-sm leading-5 flex items-center md:px-4 md:py-2 md:text-base md:leading-6"
+            :class="{ 'opacity-40 cursor-not-allowed': !isTouched || settingsLoading }"
+            :disabled="!isTouched || settingsLoading"
+            data-testid="edit-save-button"
+            @click="save"
+          >
+            <template v-if="loading">
+              <SfLoaderCircular class="animate-spin w-4 h-4 text-white mr-[5px] md:mr-[10px]" />
+            </template>
+            <template v-else>
+              <SfIconBase size="xs" class="mr-[5px] md:mr-[10px]">
+                <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path :d="savePath" fill="white" />
+                </svg>
+              </SfIconBase>
+            </template>
+            {{ getEditorTranslation('save-changes') }}
+          </button>
+        </SfTooltip>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { SfLoaderCircular, SfIconBase, SfIconVisibility } from '@storefront-ui/vue';
+import { SfLoaderCircular, SfIconBase, SfIconVisibility, SfTooltip } from '@storefront-ui/vue';
 import { editPath } from 'assets/icons/paths/edit';
 import { savePath } from '~/assets/icons/paths/save';
 import { deepEqual } from '~/utils/jsonHelper';
-const runtimeConfig = useRuntimeConfig();
+
+const previewLabel = 'Switch to Preview mode to see how your site will appear to visitors.';
+const editLabel = 'Switch to Edit mode to modify your page content and layout.';
+
 const { isEditing, isEditingEnabled, disableActions } = useEditor();
 const { isDrawerOpen } = useDrawerState();
 
 const { data, loading, cleanData } = useCategoryTemplate();
-const { closeDrawer, settingsIsDirty, loading: settingsLoading } = useSiteConfiguration();
+const { closeDrawer } = useSiteConfiguration();
+const { settingsIsDirty, loading: settingsLoading } = useSiteSettings();
 
 const { save } = useToolbar();
 
@@ -87,3 +101,18 @@ watch(
   { deep: true },
 );
 </script>
+
+<i18n lang="json">
+{
+  "en": {
+    "save-changes": "Save changes",
+    "preview": "Preview",
+    "edit": "Edit"
+  },
+  "de": {
+    "save-changes": "Save changes",
+    "preview": "Preview",
+    "edit": "Edit"
+  }
+}
+</i18n>

@@ -17,11 +17,7 @@
         productGetters.getName(product) ||
         ''
       "
-      :image-title="
-        productImageGetters.getImageName(productImageGetters.getFirstImage(product)) ||
-        productGetters.getName(product) ||
-        ''
-      "
+      :image-title="productImageGetters.getImageName(productImageGetters.getFirstImage(product)) || ''"
       :image-height="productGetters.getImageHeight(product) || 600"
       :image-width="productGetters.getImageWidth(product) || 600"
       :rating-count="productGetters.getTotalReviews(product)"
@@ -55,7 +51,7 @@ import type { ProductSliderProps } from '~/components/ProductSlider/types';
 import { paths } from '~/utils/paths';
 
 const { addModernImageExtension } = useModernImage();
-const { showNetPrices } = useCustomer();
+const { showNetPrices } = useCart();
 const localePath = useLocalePath();
 const { t } = useI18n();
 

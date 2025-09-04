@@ -6,9 +6,7 @@
           <Gallery :images="addModernImageExtensionForGallery(productGetters.getGallery(product))" />
         </section>
         <section class="mb-10 grid-in-right md:mb-0">
-          <NuxtLazyHydrate when-idle>
-            <UiPurchaseCard v-if="product" :product="product" :review-average="countsProductReviews" />
-          </NuxtLazyHydrate>
+          <UiPurchaseCard v-if="product" :product="product" :review-average="countsProductReviews" />
         </section>
         <section class="grid-in-left-bottom md:mt-8">
           <UiDivider class="mt-4 mb-2 md:mt-8" />
@@ -29,10 +27,13 @@
           </div>
         </section>
       </div>
-      <section class="mx-4 mt-28 mb-20">
-        <NuxtLazyHydrate when-visible>
-          <RecommendedProducts :category-id="productGetters.getCategoryIds(product)[0]" />
-        </NuxtLazyHydrate>
+
+      <section ref="recommendedSection" class="mx-4 mt-28 mb-20">
+        <component
+          :is="RecommendedProductsAsync"
+          v-if="showRecommended"
+          :category-id="productGetters.getCategoryIds(product)[0]"
+        />
       </section>
     </NarrowContainer>
 
@@ -46,13 +47,8 @@ import { SfIconChevronRight } from '@storefront-ui/vue';
 import type { Product } from '@plentymarkets/shop-api';
 import { productGetters, reviewGetters, categoryTreeGetters } from '@plentymarkets/shop-api';
 
-definePageMeta({
-  layout: false,
-  path: '/:slug*_:itemId',
-});
-
-const { t } = useI18n();
 const route = useRoute();
+const { t } = useI18n();
 const { setCurrentProduct } = useProducts();
 const { setProductMetaData, setProductRobotsMetaData, setProductCanonicalMetaData } = useStructuredData();
 const { buildProductLanguagePath } = useLocalization();
@@ -62,9 +58,22 @@ const { data: product, fetchProduct, setProductMeta, setBreadcrumbs, breadcrumbs
 const { data: productReviews, fetchProductReviews } = useProductReviews(Number(productId));
 const { data: categoryTree } = useCategoryTree();
 const { open, openDrawer } = useProductLegalDetailsDrawer();
-
 const { setPageMeta } = usePageMeta();
 
+definePageMeta({
+  layout: false,
+  path: '/:slug*_:itemId',
+  validate: async (route) => {
+    return validateProductParams(route.params);
+  },
+});
+
+const RecommendedProductsAsync = defineAsyncComponent(
+  async () => await import('@/components/RecommendedProducts/RecommendedProducts.vue'),
+);
+
+const showRecommended = ref(false);
+const recommendedSection = ref<HTMLElement | null>(null);
 const productName = computed(() => productGetters.getName(product.value));
 const icon = 'sell';
 setPageMeta(productName.value, icon);
@@ -78,6 +87,8 @@ await fetchProduct(productParams).then(() => {
 });
 
 if (Object.keys(product.value).length === 0) {
+  if (import.meta.client) showError({ statusCode: 404, statusMessage: 'Product not found' });
+
   throw createError({
     statusCode: 404,
     statusMessage: 'Product not found',
@@ -107,6 +118,7 @@ watch(
           `/${productGetters.getUrlPath(product.value)}_${productGetters.getItemId(product.value)}`,
         ),
         query: route.query,
+        replace: true,
       });
     }
   },
@@ -115,6 +127,7 @@ watch(
 watch(
   () => categoryTree.value,
   (categoriesTree) => {
+    setProductCanonicalMetaData(product.value);
     const productCategoryId = productGetters.getParentCategoryId(product.value);
     if (categoriesTree.length > 0 && productCategoryId) {
       const categoryTree = categoriesTree.find(
@@ -124,7 +137,6 @@ watch(
         setProductMetaData(product.value, categoryTree);
         setProductRobotsMetaData(product.value);
       }
-      setProductCanonicalMetaData(product.value);
     }
   },
   { immediate: true },
@@ -139,4 +151,24 @@ watch(
   },
   { immediate: true },
 );
+
+const observeRecommendedSection = () => {
+  if (import.meta.client && recommendedSection.value) {
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          showRecommended.value = true;
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px 0px 250px 0px',
+      },
+    );
+    observer.observe(recommendedSection.value);
+  }
+};
+
+onNuxtReady(() => observeRecommendedSection());
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-col md:flex-row h-full flex relative scroll-smooth md:gap-4 relative" data-testid="gallery">
+  <div class="flex-col md:flex-row h-full flex scroll-smooth md:gap-4 relative" data-testid="gallery">
     <div
       class="after:block after:pt-[100%] flex-1 relative overflow-hidden w-full max-h-[600px]"
       data-testid="gallery-images"
@@ -35,8 +35,9 @@
         :prev-disabled="activeIndex === 0"
         :next-disabled="activeIndex === images.length - 1"
       >
-        <template #previousButton>
+        <template #previousButton="defaultProps">
           <UiButton
+            v-bind="defaultProps"
             variant="secondary"
             size="sm"
             square
@@ -53,16 +54,17 @@
         <button
           v-for="(image, index) in images"
           :key="`imagebutton-${index}-thumbnail`"
-          :ref="(el) => assignReference(el, index)"
+          :ref="(el: Element | ComponentPublicInstance | null) => assignReference(el, index)"
           type="button"
           :aria-current="activeIndex === index"
-          :aria-label="t('gallery.thumb', index)"
+          :aria-label="t('gallery.thumb', { index: index + 1 })"
           class="w-20 relative shrink-0 pb-1 snap-start cursor-pointer transition-colors flex-grow-0"
           @click="onChangeIndex(index)"
           @focus="onChangeIndex(index)"
         >
           <NuxtImg
             :alt="productImageGetters.getImageAlternate(image) || productImageGetters.getCleanImageName(image) || ''"
+            :title="productImageGetters.getImageName(image) ? productImageGetters.getImageName(image) : null"
             class="object-contain"
             :width="productImageGetters.getImageWidth(image) ?? 80"
             :height="productImageGetters.getImageHeight(image) ?? 80"
@@ -72,8 +74,9 @@
           />
         </button>
 
-        <template #nextButton>
+        <template #nextButton="defaultProps">
           <UiButton
+            v-bind="defaultProps"
             variant="secondary"
             size="sm"
             square
@@ -93,7 +96,7 @@
           :key="productImageGetters.getImageUrl(image)"
           type="button"
           :aria-current="activeIndex === index"
-          :aria-label="t('gallery.thumb', index + 1)"
+          :aria-label="t('gallery.thumb', { index: index + 1 })"
           class="relative shrink-0 pb-1 border-b-4 cursor-pointer transition-colors flex-grow"
           :class="[activeIndex === index ? 'border-primary-500' : 'border-neutral-200']"
           @click="onChangeIndex(index)"

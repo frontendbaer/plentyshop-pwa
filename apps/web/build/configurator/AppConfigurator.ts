@@ -28,20 +28,54 @@ export class AppConfigurator {
 
     languages.activated.split(',').forEach((language) => {
       const languageFile = path.resolve(languageFilesPath, `${language}.json`);
-
       this.writer.writeMissing(fileData, languageFile);
+
+      const tsFilePath = path.resolve(languageFilesPath, `${language}.ts`);
+      const tsFileContent = this.getTsFileContent();
+
+      this.writer.writeMissing(tsFileContent, tsFilePath);
     });
+  }
+
+  private getTsFileContent(): string {
+    return `import { defineI18nLocale } from '#i18n';
+    const localeFiles = import.meta.glob('./*.json', { eager: true, import: 'default' });
+    
+    export default defineI18nLocale(async (locale) => {
+      const config = useRuntimeConfig().public;
+      let remoteTranslations = {};
+    
+      const defaultLocale = localeFiles[\`./\${locale}.json\`] ?? {};
+    
+      if (config.fetchDynamicTranslations) {
+        const { data, fetchTranslations } = useTranslations();
+    
+        await fetchTranslations(locale);
+    
+        remoteTranslations = JSON.parse(data?.value) || {};
+      }
+    
+      return {
+        ...defaultLocale,
+        ...remoteTranslations,
+      };
+    });
+    `;
   }
 
   private cleanUpInactiveLanguages(languages: Languages, languageFilesPath: string) {
     if (!languages.activated.includes('en') && languages.default !== 'en') {
       const enFile = path.resolve(languageFilesPath, 'en.json');
+      const enTsFile = path.resolve(languageFilesPath, 'en.ts');
       rmSync(enFile);
+      rmSync(enTsFile);
     }
 
     if (!languages.activated.includes('de') && languages.default !== 'de') {
       const deFile = path.resolve(languageFilesPath, 'de.json');
+      const deTsFile = path.resolve(languageFilesPath, 'de.ts');
       rmSync(deFile);
+      rmSync(deTsFile);
     }
   }
 

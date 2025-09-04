@@ -15,6 +15,7 @@
           :autofocus="!customerEmail"
           v-bind="customerEmailAttributes"
           :invalid="Boolean(errors['customerEmail'])"
+          :disabled="disabled"
           name="customerEmail"
           type="email"
           autocomplete="email"
@@ -83,7 +84,15 @@ const { errors, defineField, validate } = useForm({ validationSchema: emailValid
 const [customerEmail, customerEmailAttributes] = defineField('customerEmail');
 
 watch(isAuthorized, (updatedStatus) => {
-  customerEmail.value = updatedStatus ? sessionData.value.user?.email ?? '' : sessionData.value.user?.guestMail ?? '';
+  customerEmail.value = updatedStatus
+    ? (sessionData.value.user?.email ?? '')
+    : (sessionData.value.user?.guestMail ?? '');
+});
+
+watch(isGuest, (isGuestStatus) => {
+  if (isGuestStatus) {
+    customerEmail.value = sessionData.value.user?.guestMail ?? '';
+  }
 });
 
 const validateAndSubmitEmail = async () => {
@@ -92,12 +101,13 @@ const validateAndSubmitEmail = async () => {
   validGuestEmail.value = formData.valid;
   if (!validGuestEmail.value) return;
 
-  const updatedEmail = customerEmail.value as string;
-  const shouldUpdateEmail =
-    !sessionData.value.user?.guestMail ||
-    updatedEmail.trim().toLowerCase() !== sessionData.value.user.guestMail.trim().toLowerCase();
+  const guestEmail = customerEmail.value as string;
 
-  if (shouldUpdateEmail) await handleGuestEmailChange(updatedEmail);
+  const shouldUpdateEmail =
+    sessionData.value.user?.guestMail &&
+    sessionData.value.user.guestMail.trim().toLowerCase() !== guestEmail.trim().toLowerCase();
+
+  shouldUpdateEmail ? await handleGuestEmailChange(guestEmail) : await saveContactInformation(guestEmail);
 };
 
 const handleGuestEmailChange = async (updatedEmail: string) => {

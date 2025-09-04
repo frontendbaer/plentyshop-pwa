@@ -3,8 +3,13 @@
     <div class="pages-view sticky top-[52px] h-[calc(100vh-50px)] z-[2]" data-testid="pages-management-drawer">
       <header class="flex items-center justify-between px-4 py-5 border-b">
         <div class="flex items-center text-xl font-bold">
-          Pages
-          <SfTooltip label="Open manual" placement="right" :show-arrow="true" class="flex">
+          {{ getEditorTranslation('label') }}
+          <SfTooltip
+            :label="getEditorTranslation('open-manual-tooltip')"
+            placement="right"
+            :show-arrow="true"
+            class="flex"
+          >
             <SfIconHelp class="ml-2 cursor-pointer" @click="openHelpPage" />
           </SfTooltip>
         </div>
@@ -13,15 +18,34 @@
         </button>
       </header>
 
-      <div class="mx-4 mb-4 mt-4">
+      <div v-if="isDefaultLocale" class="mx-4 mb-4 mt-4">
         <button
           type="button"
           data-testid="add-page-btn"
           class="border border-editor-button w-full py-1 rounded-md flex align-center justify-center text-editor-button"
           @click="togglePageModal(true)"
         >
-          <SfIconAdd /> Add Page
+          <SfIconAdd /> {{ getEditorTranslation('add-page-label') }}
         </button>
+      </div>
+
+      <div v-else class="mx-4 mb-4 mt-4">
+        <SfTooltip
+          :label="getEditorTranslation('add-page-disabled-tooltip')"
+          placement="right"
+          :show-arrow="true"
+          class="flex"
+        >
+          <button
+            type="button"
+            data-testid="add-page-btn"
+            class="border border-editor-button w-full py-1 rounded-md flex align-center justify-center text-editor-button opacity-40 cursor-not-allowed"
+            disabled="true"
+            @click="null"
+          >
+            <SfIconAdd /> {{ getEditorTranslation('add-page-label') }}
+          </button>
+        </SfTooltip>
       </div>
 
       <div class="mx-4 mb-4 mt-4">
@@ -37,8 +61,12 @@
           <template v-if="loading">
             <SfLoaderCircular class="animate-spin w-4 h-4 text-white mr-[5px]" />
           </template>
-          <template v-else> Save Settings </template>
+          <template v-else>{{ getEditorTranslation('save-settings-label') }}</template>
         </button>
+      </div>
+      <div class="mx-4 mt-4 mb-4 flex items-start gap-2 text-sm text-neutral-600">
+        <SfIconWarning class="mt-0.5 shrink-0 text-yellow-500" />
+        <span class="italic">{{ getEditorTranslation('reload-hint') }}</span>
       </div>
 
       <UiAccordionItem
@@ -48,13 +76,22 @@
         summary-class="w-full hover:bg-neutral-100 px-4 py-5 flex justify-between select-none border-b"
       >
         <template #summary>
-          <h2>Content Pages</h2>
+          <h2>{{ getEditorTranslation('content-pages-label') }}</h2>
         </template>
 
-        <div :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']">
-          <ul class="rounded-lg" @scroll="(e) => handleScroll(e, 'content')">
-            <PagesItem :item="homepageItem" :parent-id="undefined" :icon="SfIconHome" :hide-settings="true" />
-            <PagesItem v-for="item in contentItems" :key="item.id" :item="item" :parent-id="item.id" />
+        <div
+          :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']"
+          @scroll="(e: Event) => handleScroll(e, 'content')"
+        >
+          <ul class="rounded-lg">
+            <PagesItem
+              :key="locale"
+              :item="homepageItem"
+              :parent-id="undefined"
+              :icon="SfIconHome"
+              :hide-settings="true"
+            />
+            <PagesItem v-for="item in contentItems" :key="`${item.id}-${locale}`" :item="item" :parent-id="item.id" />
             <li v-if="loadingContent" class="flex justify-center items-center py-4">
               <SfLoaderCircular size="sm" />
             </li>
@@ -69,11 +106,14 @@
         summary-class="w-full hover:bg-neutral-100 px-4 py-5 flex justify-between select-none border-b"
       >
         <template #summary>
-          <h2>Product Categories</h2>
+          <h2>{{ getEditorTranslation('product-categories-label') }}</h2>
         </template>
 
-        <div :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']">
-          <ul class="rounded-lg" @scroll="(e) => handleScroll(e, 'item')">
+        <div
+          :class="['mb-6 mt-4 overflow-auto', limitAccordionHeight ? 'max-h-[400px]' : 'max-h-[500px]']"
+          @scroll="(e: Event) => handleScroll(e, 'item')"
+        >
+          <ul class="rounded-lg">
             <PagesItem v-for="item in itemItems" :key="item.id" :item="item" :parent-id="item.id" />
             <li v-if="loadingItem" class="flex justify-center items-center py-4">
               <SfLoaderCircular size="sm" />
@@ -89,17 +129,28 @@
 
 <script setup lang="ts">
 import PagesItem from '~/components/PagesView/PagesItem.vue';
-import { SfIconClose, SfIconHelp, SfTooltip, SfIconAdd, SfIconHome, SfLoaderCircular } from '@storefront-ui/vue';
+import {
+  SfIconClose,
+  SfIconHelp,
+  SfTooltip,
+  SfIconAdd,
+  SfIconHome,
+  SfLoaderCircular,
+  SfIconWarning,
+} from '@storefront-ui/vue';
 import type { CategoryEntry } from '@plentymarkets/shop-api';
-const { locale } = useI18n();
+const { locale, defaultLocale } = useI18n();
 
 const { closeDrawer, togglePageModal, settingsCategory } = useSiteConfiguration();
 const { loading, hasChanges, save } = useCategorySettingsCollection();
 
-const { contentItems, itemItems, loadingContent, loadingItem, fetchCategories } = useCategoriesSearch();
+const { contentItems, itemItems, loadingContent, loadingItem, fetchCategories, resetCategories } =
+  useCategoriesSearch();
 
 const contentPagesOpen = ref(false);
 const productPagesOpen = ref(false);
+
+const isDefaultLocale = computed(() => locale.value === defaultLocale);
 
 const limitAccordionHeight = computed(() => contentPagesOpen.value && productPagesOpen.value);
 
@@ -111,6 +162,9 @@ const handleScroll = async (e: Event, type: 'content' | 'item') => {
     await fetchCategories(type);
   }
 };
+onBeforeUnmount(() => {
+  resetCategories();
+});
 
 watch(contentPagesOpen, (opened) => {
   if (opened && contentItems.value.length === 0) {
@@ -120,6 +174,17 @@ watch(contentPagesOpen, (opened) => {
 
 watch(productPagesOpen, (opened) => {
   if (opened && itemItems.value.length === 0) {
+    fetchCategories('item');
+  }
+});
+
+watch(locale, () => {
+  if (contentPagesOpen.value) {
+    resetCategories();
+    fetchCategories('content');
+  }
+  if (productPagesOpen.value) {
+    resetCategories();
     fetchCategories('item');
   }
 });
@@ -134,7 +199,7 @@ const openHelpPage = () => {
   if (targetUrl) window.open(targetUrl, '_blank');
 };
 
-const homepageItem: CategoryEntry = {
+const homepageItem = computed<CategoryEntry>(() => ({
   clients: [],
   details: [
     {
@@ -154,8 +219,8 @@ const homepageItem: CategoryEntry = {
       metaRobots: 'index, follow',
       metaTitle: 'Homepage',
       name: 'Homepage',
-      nameUrl: '/',
-      pageView: 'homepage',
+      nameUrl: locale.value === defaultLocale ? '/' : `/${locale.value}`,
+      pageView: 'Homepage',
       plenty_category_details_image_path: '',
       plenty_category_details_image2_path: '',
       plentyId: 0,
@@ -175,5 +240,30 @@ const homepageItem: CategoryEntry = {
   sitemap: 'Y',
   type: 'immutable',
   isLinkedToWebstore: true,
-};
+}));
 </script>
+
+<i18n lang="json">
+{
+  "en": {
+    "label": "Pages",
+    "open-manual-tooltip": "Open manual",
+    "add-page-label": "Add Page",
+    "add-page-disabled-tooltip": "You can only add pages in the default language of your shop.",
+    "save-settings-label": "Save Settings",
+    "reload-hint": "Changes to page settings are only reflected on reload.",
+    "content-pages-label": "Content Pages",
+    "product-categories-label": "Product Categories"
+  },
+  "de": {
+    "label": "Pages",
+    "open-manual-tooltip": "Open manual",
+    "add-page-label": "Add Page",
+    "add-page-disabled-tooltip": "You can only add pages in the default language of your shop.",
+    "save-settings-label": "Save Settings",
+    "reload-hint": "Changes to page settings are only reflected on reload.",
+    "content-pages-label": "Content Pages",
+    "product-categories-label": "Product Categories"
+  }
+}
+</i18n>

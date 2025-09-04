@@ -1,5 +1,5 @@
 <template>
-  <component :is="Toolbar" v-if="$isPreview" :style="`font-family: ${config.font}`" />
+  <component :is="Toolbar" v-if="$isPreview" />
   <div
     class="w-100 relative md:flex"
     :class="{
@@ -21,14 +21,17 @@
     <component
       :is="SiteConfigurationDrawer"
       v-if="drawerOpen"
-      class="absolute lg:relative bg-white"
+      class="absolute lg:relative bg-white font-editor"
       :class="{ 'mr-3': placement === 'left', 'ml-3': placement === 'right' }"
-      :style="`font-family: ${config.font}`"
     />
 
     <div
       class="bg-white w-full relative"
-      :class="{ 'lg:w-3/4': drawerOpen, 'lg:w-[calc(100%-66px)]': $isPreview && !drawerOpen && disableActions }"
+      :class="{
+        'lg:w-3/4': drawerOpen,
+        'transition-all duration-300 ease-in-out': placement === 'left' && drawerOpen,
+        'lg:w-[calc(100%-66px)]': $isPreview && !drawerOpen && disableActions,
+      }"
     >
       <Body class="font-body bg-editor-body-bg" :class="bodyClass" :style="currentFont" />
       <UiNotifications />
@@ -49,9 +52,55 @@ const bodyClass = ref('');
 const route = useRoute();
 const { disableActions } = useEditor();
 const { drawerOpen, currentFont, placement } = useSiteConfiguration();
-const config = useRuntimeConfig().public;
 const { setStaticPageMeta } = useCanonical();
 const { setInitialDataSSR } = useInitialSetup();
+
+const { getSetting: getFavicon } = useSiteSettings('favicon');
+const { getSetting: getOgTitle } = useSiteSettings('ogTitle');
+const { getSetting: getOgImage } = useSiteSettings('ogImage');
+const { getSetting: getMetaTitle } = useSiteSettings('metaTitle');
+const { getSetting: getMetaDescription } = useSiteSettings('metaDescription');
+const { getSetting: getMetaKeywords } = useSiteSettings('metaKeywords');
+const { getSetting: getRobots } = useSiteSettings('robots');
+const { getSetting: getPrimaryColor } = useSiteSettings('primaryColor');
+
+const title = ref(getMetaTitle());
+const ogTitle = ref(getOgTitle());
+const ogImage = ref(getOgImage());
+const description = ref(getMetaDescription());
+const keywords = ref(getMetaKeywords());
+const robots = ref(getRobots());
+const fav = ref(getFavicon());
+const themeColor = ref(getPrimaryColor());
+
+watchEffect(() => {
+  title.value = getMetaTitle();
+  ogTitle.value = getOgTitle();
+  ogImage.value = getOgImage();
+  description.value = getMetaDescription();
+  keywords.value = getMetaKeywords();
+  robots.value = getRobots();
+  fav.value = getFavicon();
+  themeColor.value = getPrimaryColor();
+});
+
+useSeoMeta({
+  title: () => title.value,
+  ogTitle: () => ogTitle.value,
+  ogImage: () => ogImage.value,
+  description: () => description.value,
+  keywords: () => keywords.value,
+  robots: () => robots.value,
+  themeColor: () => themeColor.value,
+  generator: 'plentymarkets',
+});
+
+useHead({
+  link: () => [
+    { rel: 'icon', href: fav.value },
+    { rel: 'apple-touch-icon', href: fav.value },
+  ],
+});
 
 await callOnce(async () => {
   await setInitialDataSSR();

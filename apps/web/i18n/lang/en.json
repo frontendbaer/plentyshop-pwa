@@ -216,7 +216,7 @@
       "createAccount": "Don't have an account yet?",
       "createAccountLater": "Dont worry. You can create an account after your order",
       "createAccountLinkLabel": "Sign up now!",
-      "forgotPasswordLabel": "Forgotten your password?",
+      "forgotPasswordLabel": "Forgot password?",
       "heading": "Log in to your account",
       "headingSuccess": "Reset password success",
       "loginAndContinue": "Login and continue",
@@ -230,16 +230,21 @@
       "anotherEmail": "I need to try another email address",
       "backToLogin": "Back to Login",
       "continue": "Continue",
+      "resetPassword": "Reset Password",
       "email": "Email",
-      "emailSent": "Email sent",
-      "heading": "Reset password",
+      "emailSent": "Check your e-mail: We have sent instructions on how to reset your password",
+      "heading": "Forgot password?",
+      "subHeading": "Don’t worry. We’ll send instructions on how to reset your password to your E-Mail",
       "info": "Enter the email address you used to sign up. We will send you a password reset link, that you’ll be able to use to set a new password for your account.",
       "thankYou": "Thank you, if there is an account registered with {0}, you should receive the password reset link in your inbox."
     },
     "setNewPassword": {
-      "button": "Set new password",
+      "resetSucceded": "Your password has been successfully reset. You are now authenticated using your new password.",
+      "passwordsNotMatching": "Passwords do not match",
+      "rememberPassword": "Remember your password?",
+      "button": "Save new password",
       "description": "Create the new password you want to use to log in to your account.",
-      "heading": "Set new password",
+      "heading": "Reset password",
       "help": "8 or more characters with a mix of letters, numbers and symbols.",
       "password": "New password",
       "repeatPassword": "Repeat new password"
@@ -267,7 +272,6 @@
   },
   "averageRating": "Average rating",
   "back": "Back",
-  "backToCart": "Back to My Cart",
   "backToCheckout": "Back to Checkout",
   "backToShopping": "Back To Shopping",
   "basePrice": "Base price",
@@ -338,6 +342,12 @@
   "checkoutPayment": {
     "comingSoon": "Coming soon",
     "creditCard": "Credit Card",
+    "payUponInvoice": "Pay upon invoice",
+    "birthdateLabel": "Date of Birth",
+    "birthdateError": "Enter a valid date of birth.",
+    "countrySearch": "Search for a country",
+    "phoneLabel": "Phone number",
+    "phoneError": "Enter a valid phone number.",
     "heading": "Payment method",
     "noMethodsAvailable": "There are no payment methods available. Please contact the webshop provider."
   },
@@ -498,7 +508,8 @@
   },
   "errorMessages": {
     "checkout": {
-      "missingAddress": "Please provide your address to continue with the checkout."
+      "missingAddress": "Please provide your address to continue with the checkout.",
+      "missingBillingAddress": "Please provide a billing address to continue with the checkout."
     },
     "contact": {
       "messageRequired": "Message is required.",
@@ -510,6 +521,9 @@
     "email": {
       "required": "Email is required.",
       "valid": "This field needs to be a valid email."
+    },
+    "orderId": {
+      "required": "Order ID is required."
     },
     "maxCharacters": "Enter a maximum of {max} characters.",
     "missingOrWrongProperties": "The following fields are required or have been filled in incorrectly:",
@@ -525,6 +539,10 @@
       "valid": "Password must be at least 8 characters long and include at least one letter and one number."
     },
     "editor": {
+      "add": {
+        "disabledTooDeeplyNested": "Layouts support a maximum of two levels. Select a content block instead.",
+        "disabledNotCompatibleWithLayouts": "This block can't be placed inside a layout."
+      },
       "save": {
         "success": "Your changes have been saved.",
         "settings": "For settings changes to take effect, update your shop.",
@@ -538,6 +556,7 @@
       }
     },
     "paymentFailed": "The payment has failed. Please try again.",
+    "paymentCancelled": "The payment has been cancelled. Please try again.",
     "pleaseFillOutAllFields": "Please fill out all these fields.",
     "requiredField": "This is a mandatory field.",
     "turnstileRequired": "Please check the box to verify that you are human.",
@@ -606,7 +625,12 @@
       "moto2": "New Wireless Pro",
       "moto3": "Spatial audio. Adjustable ear cups. On-device controls. All-day battery.",
       "orderNow": "Order now",
-      "showMore": "Show more"
+      "showMore": "Show more",
+      "ariaLabelSlideControls": "Slide controls",
+      "ariaLabelNextSlide": "Next slide",
+      "ariaLabelPreviousSlide": "Previous slide",
+      "ariaRoleDescriptionCarousel": "Carousel",
+      "ariaRoleDescriptionSlide": "Slide"
     },
     "displayDetails": {
       "detail1": {
@@ -643,6 +667,10 @@
   "invalidPassword": "At least 8 characters long and must contain at least one letter and one number.",
   "itemExclVAT": "Excl. VAT",
   "itemInclVAT": "Incl. VAT",
+  "includedTax": "included VAT",
+  "excludedTax": "plus VAT",
+  "netPrice": "Net",
+  "grossPrice": "Gross",
   "itemNotAvailable": "This item is not available.",
   "itemsInCart": "(Items: {count})",
   "itemsSubtotal": "Items subtotal",
@@ -733,6 +761,7 @@
   "openSearchModalButtonLabel": "Open item search",
   "or": "or",
   "orderConfirmation": {
+    "trackingOrder": "Track your order",
     "confirmationSendTo": "A confirmation with all details has been sent to {email}",
     "createAccountForBenefits": "Create an account to enjoy all benefits!",
     "sameAsShippingAddress": "Same as shipping address",
@@ -789,7 +818,11 @@
     "unbrandedExpirationDate": "Expiration date",
     "unbrandedNameOnCard": "Name on card",
     "unbrandedPay": "Pay",
-    "invalidOrder": "The order cannot be processed. Please try again."
+    "invalidOrder": "The order cannot be processed. Please try again.",
+    "puiBankDataAvailable": "Transfer the amount to the bank details provided. You can also find the bank details on your invoice.",
+    "puiBankDataNotAvailable": "The bank data for the transfer are retrieved and will be available shortly. The data will then be available here or can be found on your invoice.",
+    "puiDesignedUse": "Reason for payment",
+    "expressNotAvailable": "PayPal is not available for this delivery country. Please adjust your address accordingly or proceed to checkout to complete your order with another payment provider."
   },
   "perPage": "Per page",
   "phone": "Phone",
@@ -927,27 +960,80 @@
     "titlePostcode": "Please enter the postcode of an address stored for the order to view the order details."
   },
   "somethingWentWrongImageAlt": "Image that describes that something went wrong",
+  "sortingAndPagination": {
+    "recommendedSorting": {
+      "title": "Recommended sorting",
+      "description": "You can decide how the \"Recommended\" option is composed. Select three sorting options. The first sorting option takes the highest priority, the second option the second highest, etc.",
+      "firstSortingOptionLabel": "First sorting option",
+      "secondSortingOptionLabel": "Second sorting option",
+      "thirdSortingOptionLabel": "Third sorting option",
+      "options": {
+        "sortingPriorityCategoryItemIdAsc": "Item ID ⬆",
+        "sortingPriorityCategoryItemIdDesc": "Item ID ⬇",
+        "sortingPriorityCategoryNameAsc": "Item name A-Z",
+        "sortingPriorityCategoryNameDesc": "Item name Z-A",
+        "sortingPriorityCategoryPriceAsc": "Price ⬆",
+        "sortingPriorityCategoryPriceDesc": "Price ⬇",
+        "sortingPriorityCategoryVariationCreatedAtDesc": "Newest variation",
+        "sortingPriorityCategoryVariationCreatedAtAsc": "Oldest variation",
+        "sortingPriorityCategoryVariationIdAsc": "Variation ID ⬆",
+        "sortingPriorityCategoryVariationIdDesc": "Variation ID ⬇",
+        "sortingPriorityCategoryVariationNumberAsc": "Variation number ⬆",
+        "sortingPriorityCategoryVariationNumberDesc": "Variation number ⬇",
+        "sortingPriorityCategoryAvailabilityAsc": "Availability ⬆",
+        "sortingPriorityCategoryAvailabilityDesc": "Availability ⬇",
+        "sortingPriorityCategoryVariationUpdatedAtAsc": "Last update",
+        "sortingPriorityCategoryVariationUpdatedAtDesc": "First update",
+        "sortingPriorityCategoryVariationPositionAsc": "Variation position ⬆",
+        "sortingPriorityCategoryVariationPositionDesc": "Variation position ⬇",
+        "sortingPriorityCategoryManufacturerAsc": "Manufacturer A-Z",
+        "sortingPriorityCategoryManufacturerDesc": "Manufacturer Z-A",
+        "sortingPriorityCategoryManufacturerPositionAsc": "Manufacturer position ⬆",
+        "sortingPriorityCategoryManufacturerPositionDesc": "Manufacturer position ⬇",
+        "sortingPriorityCategoryStockAsc": "Stock ⬆",
+        "sortingPriorityCategoryStockDesc": "Stock ⬇",
+        "sortDataRandom": "Random",
+        "sortingPriorityCategoryNotSelected": "Not selected"
+      }
+    }
+  },
   "sortBy": "Sort by",
   "sortType": {
-    "nameA-Z": "Name A-Z",
-    "nameZ-A": "Name Z-A",
-    "priceDown": "Price ⬇",
-    "priceUp": "Price ⬆",
-    "reviewsDown": "Item reviews ⬇",
-    "reviewsUp": "Item reviews ⬆",
-    "recommended": "Recommended",
-    "newest": "Newest items",
-    "oldest": "Oldest items",
-    "availabilityUp": "Availability ⬆",
-    "availabilityDown": "Availability ⬇",
-    "variationNumberUp": "Variation number ⬆",
-    "variationNumberDown": "Variation number ⬇",
-    "lastUpdate": "Last update",
-    "firstUpdate": "First update",
-    "manufacturerAsc": "Manufacturer A-Z",
-    "manufacturerDesc": "Manufacturer Z-A",
-    "topSellerUp": "Top seller ⬆",
-    "topSellerDown": "Top seller ⬇"
+    "default": {
+      "recommended_sorting": "Recommended"
+    },
+    "texts": {
+      "name1_asc": "Name A-Z",
+      "name1_desc": "Name Z-A"
+    },
+    "sorting": {
+      "price": {
+        "avg_asc": "Price ⬆",
+        "avg_desc": "Price ⬇"
+      }
+    },
+    "variation": {
+      "createdAt_desc": "Newest items",
+      "createdAt_asc": "Oldest items",
+      "availability": {
+        "averageDays_asc": "Availability ⬆",
+        "averageDays_desc": "Availability ⬇"
+      },
+      "number_asc": "Variation number ⬆",
+      "number_desc": "Variation number ⬇",
+      "updatedAt_asc": "Last update",
+      "updatedAt_desc": "First update",
+      "position_asc": "Top seller ⬆",
+      "position_desc": "Top seller ⬇"
+    },
+    "item": {
+      "manufacturer": {
+        "externalName_asc": "Manufacturer A-Z",
+        "externalName_desc": "Manufacturer Z-A"
+      },
+      "feedbackDecimal_asc": "Item reviews ⬆",
+      "feedbackDecimal_desc": "Item reviews ⬇"
+    }
   },
   "storefrontError": {
     "offer": {
@@ -959,7 +1045,9 @@
     "address": {
       "createFailed": "Saving the address has failed.",
       "deleteFailed": "The deletion of the address failed.",
-      "validationFailed": "The address is invalid."
+      "validationFailed": "The address is invalid.",
+      "vatInvalid": "The VAT code is invalid.",
+      "vatValidationClientBusy": "The VAT validation service is currently unavailable, please try again later."
     },
     "cart": {
       "addToBasket": {
@@ -980,7 +1068,12 @@
       "unexpectedAddressFormat": "Unexpected address format"
     },
     "contactMail": {
-      "failed": "Message could not be sent."
+      "failed": "Message could not be sent.",
+      "emailInvalid": "The email address is not valid.",
+      "messageInvalid": "The message is not valid.",
+      "nameInvalid": "The name is not valid.",
+      "orderIdInvalid": "The Order ID is not valid.",
+      "subjectInvalid": "The subject is not valid."
     },
     "coupon": {
       "applyFailed": "The coupon could not be redeemed."

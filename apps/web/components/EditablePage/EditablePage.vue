@@ -1,6 +1,6 @@
 <template>
   <div>
-    <EmptyBlock v-if="dataIsEmpty" />
+    <EmptyBlock v-if="dataIsEmpty || (data.length === 1 && data[0].name === 'Footer')" />
     <draggable
       v-if="data.length"
       v-model="data"
@@ -23,17 +23,9 @@
           :is-tablet="isTablet"
           :block-has-data="blockHasData"
           :change-block-position="changeBlockPosition"
-          :root="true"
+          :root="getBlockDepth(block.meta.uuid) === 0"
           class="group"
-          :class="[
-            {
-              'max-w-screen-3xl mx-auto lg:px-10 mt-3': block.name !== 'Banner' && block.name !== 'Carousel',
-            },
-            {
-              'px-4 md:px-6':
-                block.name !== 'Carousel' && block.name !== 'Banner' && block.name !== 'NewsletterSubscribe',
-            },
-          ]"
+          :class="getBlockClass(block).value"
           data-testid="block-wrapper"
           @click="tabletEdit(index)"
         />
@@ -45,13 +37,24 @@
 <script lang="ts" setup>
 import draggable from 'vuedraggable/src/vuedraggable';
 import type { DragEvent, EditablePageProps } from './types';
-
+import type { Block } from '@plentymarkets/shop-api';
+import { v4 as uuid } from 'uuid';
 const { $isPreview } = useNuxtApp();
-
 const props = defineProps<EditablePageProps>();
-const { data, getBlocks } = useCategoryTemplate();
+
+const { data, getBlocksServer, cleanData } = useCategoryTemplate();
 const dataIsEmpty = computed(() => data.value.length === 0);
-await getBlocks(props.identifier, props.type);
+await getBlocksServer(props.identifier, props.type);
+const { cachedFooter } = useFooterBlock();
+const { t } = useI18n();
+
+addFooterBlock({
+  data,
+  cachedFooter,
+  t,
+  uuid,
+  cleanData,
+});
 
 const {
   isClicked,
@@ -62,9 +65,17 @@ const {
   changeBlockPosition,
   handleDragStart,
   handleDragEnd,
+  getBlockDepth,
 } = useBlockManager();
 
 const scrollToBlock = (evt: DragEvent) => {
+  const footerIndex = data.value.findIndex((block) => block.name === 'Footer');
+  const lastIndex = data.value.length - 1;
+  if (footerIndex !== -1 && footerIndex !== lastIndex) {
+    const footerBlock = data.value.splice(footerIndex, 1)[0];
+    data.value.push(footerBlock);
+  }
+
   if (evt.moved) {
     const { newIndex } = evt.moved;
     const block = document.getElementById(`block-${newIndex}`);
@@ -76,9 +87,9 @@ const scrollToBlock = (evt: DragEvent) => {
   }
 };
 
-const { settingsIsDirty, closeDrawer } = useSiteConfiguration();
+const { closeDrawer } = useSiteConfiguration();
+const { settingsIsDirty } = useSiteSettings();
 const { isEditingEnabled, disableActions } = useEditor();
-
 onMounted(() => {
   isEditingEnabled.value = false;
   window.addEventListener('beforeunload', handleBeforeUnload);
@@ -116,4 +127,20 @@ onBeforeRouteLeave((to, from, next) => {
     next();
   }
 });
+
+const getBlockClass = (block: Block) => {
+  return computed(() => [
+    {
+      'max-w-screen-3xl mx-auto lg:px-10 mt-3':
+        block.name !== 'Banner' && block.name !== 'Carousel' && block.name !== 'Footer',
+    },
+    {
+      'px-4 md:px-6':
+        block.name !== 'Carousel' &&
+        block.name !== 'Banner' &&
+        block.name !== 'NewsletterSubscribe' &&
+        block.name !== 'Footer',
+    },
+  ]);
+};
 </script>

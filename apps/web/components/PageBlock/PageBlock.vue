@@ -6,10 +6,10 @@
       :class="[
         'relative block-wrapper',
         {
-          'mb-s': blockSize === 's' && root,
-          'mb-m': blockSize === 'm' && root,
-          'mb-l': blockSize === 'l' && root,
-          'mb-xl': blockSize === 'xl' && root,
+          'mb-s': blockSize === 's' && isRootNonFooter,
+          'mb-m': blockSize === 'm' && isRootNonFooter,
+          'mb-l': blockSize === 'l' && isRootNonFooter,
+          'mb-xl': blockSize === 'xl' && isRootNonFooter,
         },
         {
           'outline outline-4 outline-[#538AEA]': showOutline && !isDragging,
@@ -28,22 +28,24 @@
         aria-label="top add block"
         @click.stop="addNewBlock(block, 'top')"
       >
-        <SfIconAdd class="cursor-pointer" />
+        <SfTooltip :label="buttonLabel" placement="top" :show-arrow="true">
+          <SfIconAdd class="cursor-pointer" />
+        </SfTooltip>
       </button>
+
       <UiBlockActions
         v-if="disableActions && blockHasData && blockHasData(block) && $isPreview && root && !isDragging"
+        :key="`${block.meta.uuid}`"
         :class="[
           'opacity-0 block-actions',
           {
             'hover:opacity-100 group-hover:opacity-100 group-focus:opacity-100': !isTablet,
             'opacity-100': isTablet && isClicked && clickedBlockIndex === index,
           },
-          // {
-          //   'max-w-max max-h-max bottom-0 left-0 m-auto': block.type === 'content',
-          // },
         ]"
         :index="index"
         :block="block"
+        :actions="getBlockActions(block)"
         @change-position="changeBlockPosition"
       />
 
@@ -66,7 +68,7 @@
       </component>
 
       <button
-        v-if="disableActions && $isPreview && root && !isDragging"
+        v-if="disableActions && $isPreview && root && !isDragging && props.block.name !== 'Footer'"
         :key="isDragging ? 'dragging' : 'not-dragging'"
         class="add-block-button no-drag z-[0] md:z-[1] lg:z-[10] absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rounded-[18px] p-[6px] bg-[#538aea] text-white opacity-0 group-hover:opacity-100 group-focus:opacity-100"
         :class="[{ 'opacity-100': isClicked && clickedBlockIndex === index }]"
@@ -74,7 +76,9 @@
         aria-label="bottom add block"
         @click.stop="addNewBlock(block, 'bottom')"
       >
-        <SfIconAdd class="cursor-pointer" />
+        <SfTooltip :label="buttonLabel" placement="bottom" :show-arrow="true">
+          <SfIconAdd class="cursor-pointer" />
+        </SfTooltip>
       </button>
     </div>
     <UiBlockPlaceholder v-if="displayBottomPlaceholder(block.meta.uuid)" />
@@ -83,7 +87,11 @@
 
 <script lang="ts" setup>
 import type { Block } from '@plentymarkets/shop-api';
-import { SfIconAdd } from '@storefront-ui/vue';
+import { SfIconAdd, SfTooltip } from '@storefront-ui/vue';
+import type { BlockPosition } from '~/composables/useBlockManager/types';
+
+const { locale, defaultLocale } = useI18n();
+const route = useRoute();
 
 const { $isPreview } = useNuxtApp();
 
@@ -101,21 +109,21 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { blockSize, drawerOpen, drawerView, openDrawerWithView } = useSiteConfiguration();
-const { visiblePlaceholder, togglePlaceholder, modules, isDragging } = useBlockManager();
+const buttonLabel = 'Insert a new block at this position.';
+
+const { drawerOpen, drawerView, openDrawerWithView } = useSiteConfiguration();
+const { getSetting: getBlockSize } = useSiteSettings('blockSize');
+const { visiblePlaceholder, togglePlaceholder, isDragging, multigridColumnUuid } = useBlockManager();
 const attrs = useAttrs();
+
+const blockSize = computed(() => getBlockSize());
 
 const getBlockComponent = computed(() => {
   if (!props.block.name) return null;
-  const regex = new RegExp(`${props.block.name}\\.vue$`, 'i');
-  const matched = Object.keys(modules).find((path) => regex.test(path));
 
-  if (matched) {
-    return defineAsyncComponent({
-      loader: modules[matched],
-    });
-  }
-  return '';
+  return defineAsyncComponent({
+    loader: getBlockLoader(props.block.name),
+  });
 });
 
 const contentProps = computed(() => {
@@ -150,8 +158,28 @@ const displayBottomPlaceholder = (uuid: string): boolean => {
   );
 };
 
-const addNewBlock = (block: Block, position: 'top' | 'bottom') => {
+const addNewBlock = (block: Block, position: BlockPosition) => {
   togglePlaceholder(block.meta.uuid, position);
   openDrawerWithView('blocksList');
+  multigridColumnUuid.value = null;
+};
+
+const isRootNonFooter = computed(() => props.root && props.block.name !== 'Footer');
+const getHomePath = (localeCode: string) => (localeCode === defaultLocale ? '/' : `/${localeCode}`);
+
+const isEditDisabled = computed(() => {
+  const homePath = getHomePath(locale.value);
+  return route.fullPath !== homePath;
+});
+const getBlockActions = (block: Block) => {
+  if (block.name === 'Footer') {
+    return {
+      isEditable: !isEditDisabled.value,
+      isMovable: false,
+      isDeletable: false,
+      classes: ['right-0', 'top-0', 'border', 'border-[#538AEA]', 'bg-white'],
+    };
+  }
+  return undefined;
 };
 </script>

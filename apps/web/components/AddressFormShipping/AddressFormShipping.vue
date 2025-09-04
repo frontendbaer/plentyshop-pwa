@@ -52,7 +52,7 @@
     </label>
 
     <label v-if="hasShippingCompany" class="md:col-span-2">
-      <UiFormLabel>{{ t('form.vatIdLabel') }} {{ t('form.required') }}</UiFormLabel>
+      <UiFormLabel>{{ t('form.vatIdLabel') }}</UiFormLabel>
       <SfInput
         v-model="vatNumber"
         autocomplete="vatNumber"
@@ -169,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Address, AddressType, userAddressGetters } from '@plentymarkets/shop-api';
+import { type Address, AddressType, ApiError, userAddressGetters } from '@plentymarkets/shop-api';
 import { SfCheckbox, SfIconClose, SfInput, SfLink, SfSelect } from '@storefront-ui/vue';
 import { ErrorMessage, useForm } from 'vee-validate';
 import type { AddressFormShippingProps } from './types';
@@ -187,6 +187,7 @@ const { set: setShippingAddress, hasCheckoutAddress: hasShippingAddress } = useC
 const { set: setBillingAddress } = useCheckoutAddress(AddressType.Billing);
 const { addressToSave: billingAddressToSave, save: saveBillingAddress } = useAddressForm(AddressType.Billing);
 const { restrictedAddresses } = useRestrictedAddress();
+const { setShippingSkeleton } = useCheckout();
 const {
   isLoading: formIsLoading,
   add: showNewForm,
@@ -213,8 +214,15 @@ const [vatNumber, vatNumberAttributes] = defineField('vatNumber');
 const showAddressSaveButton = computed(() => editing.value || showNewForm.value);
 
 if (!addAddress && address) {
-  hasShippingCompany.value = Boolean(userAddressGetters.getCompanyName(address as Address));
-  setValues(address as unknown as Record<string, string>);
+  hasShippingCompany.value = shippingAddressToSave.value?.companyName
+    ? true
+    : Boolean(userAddressGetters.getCompanyName(address as Address));
+
+  setValues({
+    ...address,
+    companyName: address?.companyName || shippingAddressToSave.value?.companyName || '',
+    vatNumber: address?.vatNumber || shippingAddressToSave.value?.vatNumber || '',
+  } as unknown as Record<string, string>);
 
   if (!hasShippingCompany.value) {
     companyName.value = '';
@@ -273,7 +281,22 @@ const validateAndSubmitForm = async () => {
   if (missingGuestCheckoutEmail.value) return backToContactInformation();
 
   if (formData.valid) {
-    await submitForm();
+    try {
+      setShippingSkeleton(true);
+      await submitForm();
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === getErrorCode('1400')) {
+          await useCustomer().getSession();
+          await submitForm();
+        }
+      } else if (error instanceof ApiError) {
+        useHandleError(error);
+      }
+    } finally {
+      setShippingSkeleton(false);
+      formIsLoading.value = false;
+    }
     if (showNewForm.value) showNewForm.value = false;
   }
 };
@@ -286,14 +309,12 @@ const submitForm = handleSubmit((shippingAddressForm) => {
     shippingAddressToSave.value.companyName = '';
     shippingAddressToSave.value.vatNumber = '';
   }
-
-  saveShippingAddress()
+  return saveShippingAddress()
     .then(() => handleSaveShippingAsBilling(shippingAddressForm as Address))
     .then(() => handleShippingPrimaryAddress())
     .then(() => handleBillingPrimaryAddress())
     .then(() => refreshAddressDependencies())
-    .then(() => handleCartTotalChanges())
-    .catch((error) => useHandleError(error));
+    .then(() => handleCartTotalChanges());
 });
 
 const edit = (address: Address) => {

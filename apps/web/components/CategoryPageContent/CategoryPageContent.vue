@@ -41,15 +41,11 @@
               :rating="productGetters.getAverageRating(product, 'half')"
               :image-url="addModernImageExtension(productGetters.getCoverImage(product))"
               :image-alt="
-                'alt-' + productImageGetters.getImageAlternate(productImageGetters.getFirstImage(product)) ||
+                productImageGetters.getImageAlternate(productImageGetters.getFirstImage(product)) ||
                 productGetters.getName(product) ||
                 ''
               "
-              :image-title="
-                productImageGetters.getImageName(productImageGetters.getFirstImage(product)) ||
-                productGetters.getName(product) ||
-                ''
-              "
+              :image-title="productImageGetters.getImageName(productImageGetters.getFirstImage(product)) || ''"
               :image-height="productGetters.getImageHeight(product) || 600"
               :image-width="productGetters.getImageWidth(product) || 600"
               :slug="productGetters.getSlug(product) + `-${productGetters.getId(product)}`"
@@ -104,7 +100,7 @@ const localePath = useLocalePath();
 const { getFacetsFromURL } = useCategoryFilter();
 const { addModernImageExtension } = useModernImage();
 
-const { showNetPrices } = useCustomer();
+const { showNetPrices } = useCart();
 
 const { isOpen, open, close } = useDisclosure();
 const viewport = useViewport();

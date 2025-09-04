@@ -25,11 +25,7 @@
               productGetters.getName(product) ||
               ''
             "
-            :image-title="
-              productImageGetters.getImageName(productImageGetters.getFirstImage(product)) ||
-              productGetters.getName(product) ||
-              ''
-            "
+            :image-title="productImageGetters.getImageName(productImageGetters.getFirstImage(product)) || ''"
             :image-height="productGetters.getImageHeight(product) || 600"
             :image-width="productGetters.getImageWidth(product) || 600"
             :slug="productGetters.getSlug(product) + `-${productGetters.getId(product)}`"
@@ -83,7 +79,7 @@ import { SfLoaderCircular, SfLink } from '@storefront-ui/vue';
 import type { WishlistPageContentProps } from '~/components/WishlistPageContent/types';
 import { paths } from '~/utils/paths';
 
-const { showNetPrices } = useCustomer();
+const { showNetPrices } = useCart();
 const localePath = useLocalePath();
 
 const { withHeader = true } = defineProps<WishlistPageContentProps>();
