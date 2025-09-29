@@ -1,6 +1,7 @@
 <template>
   <div>
-    <EmptyBlock v-if="dataIsEmpty || (data.length === 1 && data[0].name === 'Footer')" />
+    <EmptyBlock v-if="isContentEmptyInEditor" />
+    <CategoryEmptyState v-else-if="isContentEmptyInLive" />
     <draggable
       v-if="data.length"
       v-model="data"
@@ -38,21 +39,27 @@
 import draggable from 'vuedraggable/src/vuedraggable';
 import type { DragEvent, EditablePageProps } from './types';
 import type { Block } from '@plentymarkets/shop-api';
-import { v4 as uuid } from 'uuid';
+
 const { $isPreview } = useNuxtApp();
 const props = defineProps<EditablePageProps>();
 
 const { data, getBlocksServer, cleanData } = useCategoryTemplate();
 const dataIsEmpty = computed(() => data.value.length === 0);
-await getBlocksServer(props.identifier, props.type);
-const { cachedFooter } = useFooterBlock();
-const { t } = useI18n();
 
+const isContentEmptyInEditor = computed(
+  () => dataIsEmpty.value || (data.value.length === 1 && data.value[0].name === 'Footer' && $isPreview),
+);
+
+const isContentEmptyInLive = computed(
+  () => dataIsEmpty.value || (data.value.length === 1 && data.value[0].name === 'Footer'),
+);
+
+await getBlocksServer(props.identifier, props.type);
+
+const { footerCache } = useFooter();
 addFooterBlock({
   data,
-  cachedFooter,
-  t,
-  uuid,
+  cachedFooter: footerCache,
   cleanData,
 });
 
@@ -128,19 +135,16 @@ onBeforeRouteLeave((to, from, next) => {
   }
 });
 
-const getBlockClass = (block: Block) => {
-  return computed(() => [
-    {
-      'max-w-screen-3xl mx-auto lg:px-10 mt-3':
-        block.name !== 'Banner' && block.name !== 'Carousel' && block.name !== 'Footer',
-    },
-    {
-      'px-4 md:px-6':
-        block.name !== 'Carousel' &&
-        block.name !== 'Banner' &&
-        block.name !== 'NewsletterSubscribe' &&
-        block.name !== 'Footer',
-    },
-  ]);
+const containerExcludedBlockSet = new Set(['Banner', 'Carousel', 'Footer', 'MultiGrid']);
+const paddingExcludedBlockSet = new Set(['Banner', 'Carousel', 'NewsletterSubscribe', 'Footer', 'MultiGrid']);
+
+const isExcluded = (blockName: string, excludedSet: Set<string>) => {
+  return excludedSet.has(blockName);
 };
+
+const getBlockClass = (block: Block) =>
+  computed(() => ({
+    'max-w-screen-3xl mx-auto lg:px-10 mt-3': !isExcluded(block.name, containerExcludedBlockSet),
+    'px-4 md:px-6': !isExcluded(block.name, paddingExcludedBlockSet),
+  }));
 </script>

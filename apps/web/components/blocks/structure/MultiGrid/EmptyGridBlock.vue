@@ -1,5 +1,5 @@
 <template>
-  <div v-if="$isPreview" class="flex w-full max-w-4xl mx-auto">
+  <div v-if="$isPreview" class="flex w-full">
     <div
       v-if="drawerOpen && isActiveColumn"
       data-testid="active-empty-multicolumn"
@@ -28,6 +28,7 @@ const { $isPreview } = useNuxtApp();
 const props = defineProps<EmptyGridBlockProps>();
 const { multigridColumnUuid, updateMultigridColumnUuid, visiblePlaceholder } = useBlockManager();
 const { openDrawerWithView, drawerOpen } = useSiteConfiguration();
+
 const isActiveColumn = computed(() => multigridColumnUuid.value === props.meta.uuid);
 
 const addBlockToColumn = () => {

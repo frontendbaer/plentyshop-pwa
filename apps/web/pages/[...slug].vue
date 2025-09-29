@@ -10,6 +10,13 @@
       <EditablePage :identifier="categoryGetters.getId(productsCatalog.category)" :type="'category'" />
     </template>
     <template v-else>
+      <UiButton variant="tertiary" class="md:hidden whitespace-nowrap" @click="open">
+        <template #prefix>
+          <SfIconTune />
+        </template>
+        {{ t('listSettings') }}
+      </UiButton>
+
       <CategoryPageContent
         v-if="productsCatalog?.products"
         :title="categoryGetters.getCategoryName(productsCatalog.category)"
@@ -18,10 +25,7 @@
         :items-per-page="Number(productsPerPage)"
       >
         <template #sidebar>
-          <CategoryTree :category="productsCatalog.category" />
-          <CategorySorting />
-          <CategoryItemsPerPage class="mt-6" :total-products="productsCatalog.pagination.totals" />
-          <CategoryFilters v-if="facetGetters.hasFilters(productsCatalog.facets)" :facets="productsCatalog.facets" />
+          <BlocksSortFilter v-bind="sortFilter" />
         </template>
       </CategoryPageContent>
     </template>
@@ -29,18 +33,23 @@
 </template>
 
 <script setup lang="ts">
-import { categoryGetters, categoryTreeGetters, facetGetters } from '@plentymarkets/shop-api';
-import { SfLoaderCircular } from '@storefront-ui/vue';
+import { categoryGetters, categoryTreeGetters } from '@plentymarkets/shop-api';
+import { SfIconTune, SfLoaderCircular, useDisclosure } from '@storefront-ui/vue';
 
-definePageMeta({ layout: false, middleware: ['category-guard'] });
+definePageMeta({ layout: false, middleware: ['category-guard'], type: 'category' });
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const { setCategoriesPageMeta } = useCanonical();
+const { setBlocksListContext } = useBlockManager();
 const { getFacetsFromURL, checkFiltersInURL } = useCategoryFilter();
 const { fetchProducts, data: productsCatalog, productsPerPage, loading } = useProducts();
 const { data: categoryTree } = useCategoryTree();
+const { open } = useDisclosure();
+const { getSortFilterCategoryTemplateBlock } = useCategoryTemplate();
+
+const sortFilter = getSortFilterCategoryTemplateBlock();
 
 const { buildCategoryLanguagePath } = useLocalization();
 const { isEditablePage } = useToolbar();
@@ -72,7 +81,15 @@ const handleQueryUpdate = async () => {
   }
 };
 
-await handleQueryUpdate().then(() => setCategoriesPageMeta(productsCatalog.value, getFacetsFromURL(), canonicalDb));
+await handleQueryUpdate().then(() => {
+  setCategoriesPageMeta(productsCatalog.value, getFacetsFromURL(), canonicalDb);
+  setBlocksListContext(
+    categoryTreeGetters.findCategoryById(categoryTree.value, categoryGetters.getId(productsCatalog.value.category))
+      ?.type === 'item'
+      ? 'productCategory'
+      : 'content',
+  );
+});
 
 const { setPageMeta } = usePageMeta();
 const categoryName = computed(() => categoryGetters.getCategoryName(productsCatalog.value.category));
